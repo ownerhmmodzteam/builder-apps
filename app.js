@@ -133,4 +133,4 @@ jobs:
         with:
           name: application-debug
           path: build_box/platforms/android/app/build/outputs/apk/debug/app-debug.apk`;
-               }
+}
