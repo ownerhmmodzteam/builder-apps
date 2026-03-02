@@ -7,30 +7,32 @@ async function build() {
     const logContainer = document.getElementById('log-container');
     const logText = document.getElementById('log-text');
 
-    if(!token || !name) return alert('Lengkapi data!');
+    if(!token || !name) return alert('Data belum lengkap, Tuan!');
 
     logContainer.style.display = 'block';
-    logText.innerHTML = "Otentikasi...";
+    logText.innerHTML = "Otentikasi GitHub...";
 
     try {
         const userRes = await fetch(`${API}/user`, { headers: {'Authorization': `token ${token}`} });
+        if(!userRes.ok) throw new Error("Token lu ampas/salah, Tuan!");
         const userData = await userRes.json();
         const username = userData.login;
-        const repo = `apk-build-${Date.now()}`;
+        const repo = `apk-pro-${Date.now()}`;
 
-        logText.innerHTML = "Membuat repository...";
+        logText.innerHTML = "Membangun pabrik APK...";
         await fetch(`${API}/user/repos`, {
             method: 'POST',
             headers: {'Authorization': `token ${token}`, 'Content-Type': 'application/json'},
-            body: JSON.stringify({ name: repo, private: false })
+            body: JSON.stringify({ name: repo, auto_init: true })
         });
 
         const send = async (p, c, b64 = false) => {
+            // Perbaikan btoa: Support Emoji dan Karakter Unik UTF-8
             const content = b64 ? c.split(',')[1] : btoa(unescape(encodeURIComponent(c)));
             return fetch(`${API}/repos/${username}/${repo}/contents/${p}`, {
                 method: 'PUT',
                 headers: {'Authorization': `token ${token}`},
-                body: JSON.stringify({ message: 'init app', content: content })
+                body: JSON.stringify({ message: 'setup', content: content })
             });
         };
 
@@ -48,7 +50,7 @@ async function build() {
         await send('config.xml', getConfig(pkg, name, start));
         await send('.github/workflows/main.yml', getWorkflow());
 
-        logText.innerHTML = "Menunggu Build (3-5 menit)...";
+        logText.innerHTML = "✅ Berhasil! GitHub lagi manasin kompor (3-5 menit)...";
         pollStatus(username, repo, token);
 
     } catch (e) { logText.innerHTML = "❌ Error: " + e.message; }
@@ -72,22 +74,24 @@ async function pollStatus(u, r, t) {
     const logText = document.getElementById('log-text');
     const dot = document.getElementById('status-icon');
     const check = setInterval(async () => {
-        const res = await fetch(`${API}/repos/${u}/${r}/actions/runs`, { headers: {'Authorization': `token ${t}`} });
-        const data = await res.json();
-        const run = data.workflow_runs[0];
+        try {
+            const res = await fetch(`${API}/repos/${u}/${r}/actions/runs`, { headers: {'Authorization': `token ${t}`} });
+            const data = await res.json();
+            const run = data.workflow_runs[0];
 
-        if(run?.status === 'completed') {
-            clearInterval(check);
-            if(run.conclusion === 'success') {
-                dot.innerHTML = '<i class="fa-solid fa-circle-check fa-2x" style="color:#34c759"></i>';
-                logText.innerHTML = `<br><a href="https://github.com/${u}/${r}/actions" target="_blank" style="background:#0a84ff; color:white; padding:12px 20px; border-radius:10px; display:inline-block; text-decoration:none; font-weight:bold; margin-top:10px">DOWNLOAD APK</a>`;
-            } else {
-                dot.innerHTML = '<i class="fa-solid fa-circle-xmark fa-2x" style="color:#ff3b30"></i>';
-                logText.innerHTML = "Build Gagal! Cek Log di GitHub.";
+            if(run?.status === 'completed') {
+                clearInterval(check);
+                if(run.conclusion === 'success') {
+                    dot.innerHTML = '<i class="fa-solid fa-circle-check fa-2x" style="color:#34c759"></i>';
+                    logText.innerHTML = `<br><a href="https://github.com/${u}/${r}/actions" target="_blank" style="background:#0a84ff; color:white; padding:12px 20px; border-radius:10px; display:inline-block; text-decoration:none; font-weight:bold; margin-top:10px">DOWNLOAD APK</a>`;
+                } else {
+                    dot.innerHTML = '<i class="fa-solid fa-circle-xmark fa-2x" style="color:#ff3b30"></i>';
+                    logText.innerHTML = "Build Gagal! Cek Log di GitHub Actions.";
+                }
+            } else if(run) {
+                logText.innerHTML = `Status: <b style="color:#0a84ff">${run.status}...</b>`;
             }
-        } else if(run) {
-            logText.innerHTML = `Sedang Memasak: <b style="color:#0a84ff">${run.status}...</b>`;
-        }
+        } catch (e) {}
     }, 15000);
 }
 
@@ -113,6 +117,4 @@ jobs:
         with:
           name: app
           path: platforms/android/app/build/outputs/apk/debug/app-debug.apk`;
-                    }
-path: platforms/android/app/build/outputs/apk/debug/app-debug.apk`;
-                                }
+}
