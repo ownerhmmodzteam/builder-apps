@@ -27,7 +27,7 @@ async function build() {
         });
 
         const send = async (p, c, b64 = false) => {
-            // Perbaikan btoa: Support Emoji dan Karakter Unik UTF-8
+            // Support Emoji & UTF-8 Characters
             const content = b64 ? c.split(',')[1] : btoa(unescape(encodeURIComponent(c)));
             return fetch(`${API}/repos/${username}/${repo}/contents/${p}`, {
                 method: 'PUT',
@@ -48,7 +48,7 @@ async function build() {
         }
 
         await send('config.xml', getConfig(pkg, name, start));
-        await send('.github/workflows/main.yml', getWorkflow());
+        await send('.github/workflows/main.yml', getWorkflow(pkg, name));
 
         logText.innerHTML = "✅ Berhasil! GitHub lagi manasin kompor (3-5 menit)...";
         pollStatus(username, repo, token);
@@ -61,12 +61,14 @@ const toText = f => new Promise(r => { const rd = new FileReader(); rd.onload = 
 
 function getConfig(p, n, s) {
     return `<?xml version='1.0' encoding='utf-8'?>
-<widget id="${p}" version="1.0.0" xmlns="http://www.w3.org/ns/widgets">
+<widget id="${p}" version="1.0.0" xmlns="http://www.w3.org/ns/widgets" xmlns:android="http://schemas.android.com/apk/res/android">
     <name>${n}</name>
     <content src="${s}" />
-    <icon src="icon.png" />
+    <access origin="*" />
+    <allow-intent href="http://*/*" />
+    <allow-intent href="https://*/*" />
+    <icon src="www/icon.png" />
     <preference name="Orientation" value="portrait" />
-    <preference name="Fullscreen" value="true" />
 </widget>`;
 }
 
@@ -95,7 +97,7 @@ async function pollStatus(u, r, t) {
     }, 15000);
 }
 
-function getWorkflow() {
+function getWorkflow(pkg, name) {
     return `name: Build
 on: [push]
 permissions:
@@ -111,14 +113,22 @@ jobs:
           java-version: '17'
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
-      - name: Build APK
+      - name: Create Cordova Project
         run: |
           npm install -g cordova
+          # Buat struktur project resmi di server
+          cordova create build_box ${pkg} "${name}"
+          # Timpa folder www dan config dengan milik Tuan
+          rm -rf build_box/www/*
+          cp -r www/* build_box/www/
+          cp config.xml build_box/config.xml
+          cd build_box
           cordova platform add android
           yes | sdkmanager --licenses || true
           cordova build android --debug
-      - uses: actions/upload-artifact@v4
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
         with:
-          name: app-debug
-          path: platforms/android/app/build/outputs/apk/debug/app-debug.apk`;
-}
+          name: application-debug
+          path: build_box/platforms/android/app/build/outputs/apk/debug/app-debug.apk`;
+            }
