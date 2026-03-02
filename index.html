@@ -20,7 +20,6 @@
         .input-row i { color: var(--accent); width: 30px; font-size: 18px; }
         input, select { background: transparent; border: none; color: var(--text); font-size: 16px; width: 100%; outline: none; padding: 5px; }
         .btn-build { width: 100%; background: var(--accent); color: #fff; padding: 18px; border-radius: 18px; font-size: 17px; font-weight: 700; border: none; cursor: pointer; box-shadow: 0 10px 20px rgba(10, 132, 255, 0.3); transition: 0.3s; }
-        .btn-build:active { transform: scale(0.96); opacity: 0.8; }
         #log-container { margin-top: 25px; padding: 20px; background: #1c1c1e; border-radius: 20px; display: none; }
         .hidden { display: none; }
     </style>
@@ -34,10 +33,10 @@
         </div>
         <div class="glass-card">
             <div class="input-row"><i class="fa-solid fa-signature"></i><input type="text" id="appName" placeholder="Nama Aplikasi"></div>
-            <div class="input-row"><i class="fa-solid fa-box-archive"></i><input type="text" id="pkgId" placeholder="com.hmmodz.app"></div>
+            <div class="input-row"><i class="fa-solid fa-box-archive"></i><input type="text" id="pkgId" placeholder="com.app.build"></div>
         </div>
         <div class="glass-card">
-            <div id="url-input" class="input-row"><i class="fa-solid fa-globe"></i><input type="text" id="webUrl" placeholder="https://google.com"></div>
+            <div id="url-input" class="input-row"><i class="fa-solid fa-globe"></i><input type="text" id="webUrl" placeholder="https://example.com"></div>
             <div id="file-input" class="input-row hidden"><i class="fa-solid fa-file-code"></i><input type="file" id="sourceFile" accept=".html,.zip"></div>
             <div class="input-row"><i class="fa-solid fa-image"></i><input type="file" id="iconFile" accept="image/png"></div>
         </div>
@@ -47,7 +46,7 @@
         <button class="btn-build" onclick="build()">Generate APK</button>
         <div id="log-container">
             <div id="status-icon" style="text-align:center; margin-bottom:10px"><i class="fas fa-circle-notch fa-spin fa-2x" style="color:var(--accent)"></i></div>
-            <div id="log-text" style="font-size:14px; text-align:center">Menyiapkan mesin...</div>
+            <div id="log-text" style="font-size:14px; text-align:center">Menyiapkan...</div>
         </div>
     </div>
     <script src="app.js"></script>
