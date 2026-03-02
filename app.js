@@ -6,27 +6,37 @@ async function build() {
     const pkg = document.getElementById('pkgId').value;
     const logContainer = document.getElementById('log-container');
     const logText = document.getElementById('log-text');
+
     if(!token || !name) return alert('Lengkapi data!');
+
     logContainer.style.display = 'block';
     logText.innerHTML = "Otentikasi...";
+
     try {
         const userRes = await fetch(`${API}/user`, { headers: {'Authorization': `token ${token}`} });
-        const username = (await userRes.json()).login;
+        const userData = await userRes.json();
+        const username = userData.login;
         const repo = `apk-build-${Date.now()}`;
+
+        logText.innerHTML = "Membuat repository...";
         await fetch(`${API}/user/repos`, {
             method: 'POST',
             headers: {'Authorization': `token ${token}`, 'Content-Type': 'application/json'},
-            body: JSON.stringify({ name: repo })
+            body: JSON.stringify({ name: repo, private: false })
         });
+
         const send = async (p, c, b64 = false) => {
+            const content = b64 ? c.split(',')[1] : btoa(unescape(encodeURIComponent(c)));
             return fetch(`${API}/repos/${username}/${repo}/contents/${p}`, {
                 method: 'PUT',
                 headers: {'Authorization': `token ${token}`},
-                body: JSON.stringify({ message: 'init', content: b64 ? c.split(',')[1] : btoa(c) })
+                body: JSON.stringify({ message: 'init app', content: content })
             });
         };
+
         const icon = document.getElementById('iconFile').files[0];
         if(icon) await send('www/icon.png', await toBase64(icon), true);
+
         let start = "index.html";
         if(window.currentMode === 'url') {
             start = document.getElementById('webUrl').value;
@@ -34,18 +44,28 @@ async function build() {
             const f = document.getElementById('sourceFile').files[0];
             if(f) await send('www/index.html', await toText(f));
         }
+
         await send('config.xml', getConfig(pkg, name, start));
         await send('.github/workflows/main.yml', getWorkflow());
+
         logText.innerHTML = "Menunggu Build (3-5 menit)...";
         pollStatus(username, repo, token);
-    } catch (e) { logText.innerHTML = "Error: " + e.message; }
+
+    } catch (e) { logText.innerHTML = "❌ Error: " + e.message; }
 }
 
 const toBase64 = f => new Promise(r => { const rd = new FileReader(); rd.onload = e => r(e.target.result); rd.readAsDataURL(f); });
 const toText = f => new Promise(r => { const rd = new FileReader(); rd.onload = e => r(e.target.result); rd.readAsText(f); });
 
 function getConfig(p, n, s) {
-    return `<?xml version='1.0' encoding='utf-8'?><widget id="${p}" version="1.0.0" xmlns="http://www.w3.org/ns/widgets"><name>${n}</name><content src="${s}" /><icon src="icon.png" /><preference name="Orientation" value="portrait" /></widget>`;
+    return `<?xml version='1.0' encoding='utf-8'?>
+<widget id="${p}" version="1.0.0" xmlns="http://www.w3.org/ns/widgets">
+    <name>${n}</name>
+    <content src="${s}" />
+    <icon src="icon.png" />
+    <preference name="Orientation" value="portrait" />
+    <preference name="Fullscreen" value="true" />
+</widget>`;
 }
 
 async function pollStatus(u, r, t) {
@@ -55,12 +75,18 @@ async function pollStatus(u, r, t) {
         const res = await fetch(`${API}/repos/${u}/${r}/actions/runs`, { headers: {'Authorization': `token ${t}`} });
         const data = await res.json();
         const run = data.workflow_runs[0];
+
         if(run?.status === 'completed') {
             clearInterval(check);
-            dot.innerHTML = '<i class="fa-solid fa-circle-check fa-2x" style="color:#34c759"></i>';
-            logText.innerHTML = `<br><a href="https://github.com/${u}/${r}/actions" target="_blank" style="color:#0a84ff; font-weight:bold; text-decoration:none;">DOWNLOAD APK</a>`;
+            if(run.conclusion === 'success') {
+                dot.innerHTML = '<i class="fa-solid fa-circle-check fa-2x" style="color:#34c759"></i>';
+                logText.innerHTML = `<br><a href="https://github.com/${u}/${r}/actions" target="_blank" style="background:#0a84ff; color:white; padding:12px 20px; border-radius:10px; display:inline-block; text-decoration:none; font-weight:bold; margin-top:10px">DOWNLOAD APK</a>`;
+            } else {
+                dot.innerHTML = '<i class="fa-solid fa-circle-xmark fa-2x" style="color:#ff3b30"></i>';
+                logText.innerHTML = "Build Gagal! Cek Log di GitHub.";
+            }
         } else if(run) {
-            logText.innerHTML = `Status Server: ${run.status}...`;
+            logText.innerHTML = `Sedang Memasak: <b style="color:#0a84ff">${run.status}...</b>`;
         }
     }, 15000);
 }
@@ -87,4 +113,6 @@ jobs:
         with:
           name: app
           path: platforms/android/app/build/outputs/apk/debug/app-debug.apk`;
+                    }
+path: platforms/android/app/build/outputs/apk/debug/app-debug.apk`;
                                 }
