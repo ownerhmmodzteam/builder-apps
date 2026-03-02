@@ -3,198 +3,63 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>APK Builder Project</title>
+    <title>APK Builder Pro</title>
     <link rel="stylesheet" href="https://fonts.cdnfonts.com/css/sf-pro-display">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <style>
-        :root {
-            --bg: #000000;
-            --card: rgba(28, 28, 30, 0.7);
-            --accent: #0a84ff;
-            --text: #ffffff;
-            --sec: #8e8e93;
-            --border: rgba(255, 255, 255, 0.1);
-        }
-
-        body {
-            font-family: 'SF Pro Display', -apple-system, sans-serif;
-            background: var(--bg);
-            background-image: radial-gradient(circle at 50% -20%, #1c1c1e, #000);
-            color: var(--text);
-            margin: 0;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            min-height: 100vh;
-        }
-
-        .header {
-            width: 100%;
-            padding: 20px 0;
-            text-align: center;
-            backdrop-filter: blur(20px);
-            border-bottom: 0.5px solid var(--border);
-            position: sticky;
-            top: 0;
-            z-index: 10;
-        }
-
+        :root { --bg: #000; --card: rgba(28,28,30,0.7); --accent: #0a84ff; --text: #fff; --sec: #8e8e93; --border: rgba(255,255,255,0.1); }
+        body { font-family: 'SF Pro Display', sans-serif; background: var(--bg); background-image: radial-gradient(circle at 50% -20%, #1c1c1e, #000); color: var(--text); margin: 0; display: flex; flex-direction: column; align-items: center; min-height: 100vh; }
+        .header { width: 100%; padding: 20px 0; text-align: center; backdrop-filter: blur(20px); border-bottom: 0.5px solid var(--border); position: sticky; top: 0; z-index: 10; }
         .container { width: 90%; max-width: 420px; padding: 20px 0; }
-
-        /* Stylish Tab Switcher */
-        .tab-switcher {
-            background: var(--card);
-            padding: 4px;
-            border-radius: 12px;
-            display: flex;
-            margin-bottom: 25px;
-            border: 0.5px solid var(--border);
-        }
-
-        .tab-item {
-            flex: 1;
-            padding: 10px;
-            text-align: center;
-            font-size: 14px;
-            font-weight: 600;
-            cursor: pointer;
-            border-radius: 10px;
-            transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
-        .tab-item.active {
-            background: rgba(255,255,255,0.15);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.5);
-        }
-
-        /* Modern Input Group */
-        .glass-card {
-            background: var(--card);
-            backdrop-filter: blur(10px);
-            border-radius: 20px;
-            padding: 8px 16px;
-            margin-bottom: 20px;
-            border: 0.5px solid var(--border);
-        }
-
-        .input-row {
-            padding: 14px 0;
-            display: flex;
-            align-items: center;
-            border-bottom: 0.5px solid var(--border);
-        }
-
+        .tab-switcher { background: var(--card); padding: 4px; border-radius: 12px; display: flex; margin-bottom: 25px; border: 0.5px solid var(--border); }
+        .tab-item { flex: 1; padding: 10px; text-align: center; font-size: 14px; font-weight: 600; cursor: pointer; border-radius: 10px; transition: 0.3s; }
+        .tab-item.active { background: rgba(255,255,255,0.15); box-shadow: 0 4px 12px rgba(0,0,0,0.5); }
+        .glass-card { background: var(--card); backdrop-filter: blur(10px); border-radius: 20px; padding: 8px 16px; margin-bottom: 20px; border: 0.5px solid var(--border); }
+        .input-row { padding: 14px 0; display: flex; align-items: center; border-bottom: 0.5px solid var(--border); }
         .input-row:last-child { border-bottom: none; }
-
         .input-row i { color: var(--accent); width: 30px; font-size: 18px; }
-
-        input, select {
-            background: transparent;
-            border: none;
-            color: var(--text);
-            font-size: 16px;
-            width: 100%;
-            outline: none;
-            padding: 5px;
-        }
-
-        ::placeholder { color: var(--sec); opacity: 0.6; }
-
-        .btn-build {
-            width: 100%;
-            background: var(--accent);
-            color: #fff;
-            padding: 18px;
-            border-radius: 18px;
-            font-size: 17px;
-            font-weight: 700;
-            border: none;
-            cursor: pointer;
-            box-shadow: 0 10px 20px rgba(10, 132, 255, 0.3);
-            transition: 0.3s;
-        }
-
+        input, select { background: transparent; border: none; color: var(--text); font-size: 16px; width: 100%; outline: none; padding: 5px; }
+        .btn-build { width: 100%; background: var(--accent); color: #fff; padding: 18px; border-radius: 18px; font-size: 17px; font-weight: 700; border: none; cursor: pointer; box-shadow: 0 10px 20px rgba(10, 132, 255, 0.3); transition: 0.3s; }
         .btn-build:active { transform: scale(0.96); opacity: 0.8; }
-
-        #log-container {
-            margin-top: 25px;
-            padding: 20px;
-            background: #1c1c1e;
-            border-radius: 20px;
-            display: none;
-            animation: slideIn 0.5s ease;
-        }
-
-        @keyframes slideIn { from { opacity:0; transform: translateY(10px); } to { opacity:1; transform: translateY(0); } }
-
+        #log-container { margin-top: 25px; padding: 20px; background: #1c1c1e; border-radius: 20px; display: none; }
         .hidden { display: none; }
     </style>
 </head>
 <body>
-
-<div class="header">
-    <h1 style="font-size: 18px; margin:0">APK Builder <span style="color:var(--accent)">Project</span></h1>
-</div>
-
-<div class="container">
-    <div class="tab-switcher">
-        <div id="tab-url" class="tab-item active" onclick="switchMode('url')">Website URL</div>
-        <div id="tab-file" class="tab-item" onclick="switchMode('file')">Local File</div>
-    </div>
-
-    <div class="glass-card">
-        <div class="input-row">
-            <i class="fa-solid fa-signature"></i>
-            <input type="text" id="appName" placeholder="Nama Aplikasi">
+    <div class="header"><h1>APK Builder <span style="color:var(--accent)">Pro</span></h1></div>
+    <div class="container">
+        <div class="tab-switcher">
+            <div id="tab-url" class="tab-item active" onclick="switchMode('url')">Website URL</div>
+            <div id="tab-file" class="tab-item" onclick="switchMode('file')">Local File</div>
         </div>
-        <div class="input-row">
-            <i class="fa-solid fa-box-archive"></i>
-            <input type="text" id="pkgId" placeholder="com.company.app">
+        <div class="glass-card">
+            <div class="input-row"><i class="fa-solid fa-signature"></i><input type="text" id="appName" placeholder="Nama Aplikasi"></div>
+            <div class="input-row"><i class="fa-solid fa-box-archive"></i><input type="text" id="pkgId" placeholder="com.hmmodz.app"></div>
         </div>
-    </div>
-
-    <div class="glass-card">
-        <div id="url-input" class="input-row">
-            <i class="fa-solid fa-globe"></i>
-            <input type="text" id="webUrl" placeholder="https://example.com">
+        <div class="glass-card">
+            <div id="url-input" class="input-row"><i class="fa-solid fa-globe"></i><input type="text" id="webUrl" placeholder="https://google.com"></div>
+            <div id="file-input" class="input-row hidden"><i class="fa-solid fa-file-code"></i><input type="file" id="sourceFile" accept=".html,.zip"></div>
+            <div class="input-row"><i class="fa-solid fa-image"></i><input type="file" id="iconFile" accept="image/png"></div>
         </div>
-        <div id="file-input" class="input-row hidden">
-            <i class="fa-solid fa-file-code"></i>
-            <input type="file" id="sourceFile" accept=".html,.zip" style="font-size:12px">
+        <div class="glass-card">
+            <div class="input-row"><i class="fa-solid fa-key"></i><input type="password" id="token" placeholder="GitHub Personal Token"></div>
         </div>
-        <div class="input-row">
-            <i class="fa-solid fa-image"></i>
-            <input type="file" id="iconFile" accept="image/png" style="font-size:12px">
+        <button class="btn-build" onclick="build()">Generate APK</button>
+        <div id="log-container">
+            <div id="status-icon" style="text-align:center; margin-bottom:10px"><i class="fas fa-circle-notch fa-spin fa-2x" style="color:var(--accent)"></i></div>
+            <div id="log-text" style="font-size:14px; text-align:center">Menyiapkan mesin...</div>
         </div>
     </div>
-
-    <div class="glass-card">
-        <div class="input-row">
-            <i class="fa-solid fa-key"></i>
-            <input type="password" id="token" placeholder="GitHub Personal Token">
-        </div>
-    </div>
-
-    <button class="btn-build" onclick="build()">Generate APK</button>
-
-    <div id="log-container">
-        <div id="status-icon" style="text-align: center; margin-bottom:10px">
-            <i class="fas fa-circle-notch fa-spin fa-2x" style="color:var(--accent)"></i>
-        </div>
-        <div id="log-text" style="font-size: 14px; text-align:center">Menyiapkan mesin build...</div>
-    </div>
-</div>
-
-<script src="app.js"></script>
-<script>
-    function switchMode(m) {
-        document.getElementById('tab-url').classList.toggle('active', m === 'url');
-        document.getElementById('tab-file').classList.toggle('active', m === 'file');
-        document.getElementById('url-input').classList.toggle('hidden', m === 'file');
-        document.getElementById('file-input').classList.toggle('hidden', m === 'url');
-        window.currentMode = m;
-    }
-    window.currentMode = 'url';
-</script>
+    <script src="app.js"></script>
+    <script>
+        function switchMode(m) {
+            document.getElementById('tab-url').classList.toggle('active', m === 'url');
+            document.getElementById('tab-file').classList.toggle('active', m === 'file');
+            document.getElementById('url-input').classList.toggle('hidden', m === 'file');
+            document.getElementById('file-input').classList.toggle('hidden', m === 'url');
+            window.currentMode = m;
+        }
+        window.currentMode = 'url';
+    </script>
 </body>
 </html>
