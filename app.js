@@ -98,23 +98,27 @@ async function pollStatus(u, r, t) {
 function getWorkflow() {
     return `name: Build
 on: [push]
+permissions:
+  contents: write
 jobs:
   apk:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-java@v3
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
-          java-version: '11'
-      - uses: android-actions/setup-android@v2
-      - run: |
+          java-version: '17'
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+      - name: Build APK
+        run: |
           npm install -g cordova
           cordova platform add android
           yes | sdkmanager --licenses || true
           cordova build android --debug
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
-          name: app
+          name: app-debug
           path: platforms/android/app/build/outputs/apk/debug/app-debug.apk`;
 }
