@@ -14,7 +14,7 @@ async function build() {
 
     try {
         const userRes = await fetch(`${API}/user`, { headers: {'Authorization': `token ${token}`} });
-        if(!userRes.ok) throw new Error("Token lu ampas/salah,");
+        if(!userRes.ok) throw new Error("Token lu ampas/salah!");
         const userData = await userRes.json();
         const username = userData.login;
         const repo = `apk-pro-${Date.now()}`;
@@ -79,6 +79,7 @@ function getConfig(p, n, s, hasIcon) {
 async function pollStatus(u, r, t) {
     const logText = document.getElementById('log-text');
     const dot = document.getElementById('status-icon');
+    
     const check = setInterval(async () => {
         try {
             const res = await fetch(`${API}/repos/${u}/${r}/actions/runs`, { headers: {'Authorization': `token ${t}`} });
@@ -86,20 +87,28 @@ async function pollStatus(u, r, t) {
             const run = data.workflow_runs[0];
 
             if(run?.status === 'completed') {
-                clearInterval(check);
                 if(run.conclusion === 'success') {
-                    const artRes = await fetch(run.artifacts_url, { headers: {'Authorization': `token ${t}`} });
-                    const artData = await artRes.json();
-                    const artifact = artData.artifacts[0];
+                    const fetchArtifact = async (retryCount = 0) => {
+                        const artRes = await fetch(run.artifacts_url, { headers: {'Authorization': `token ${t}`} });
+                        const artData = await artRes.json();
+                        const artifact = artData.artifacts[0];
 
-                    if(artifact) {
-                        const dlUrl = `https://github.com/${u}/${r}/suites/${run.check_suite_id}/artifacts/${artifact.id}`;
-                        dot.innerHTML = '<i class="fa-solid fa-circle-check fa-2x" style="color:#34c759"></i>';
-                        logText.innerHTML = `<br><a href="${dlUrl}" target="_blank" style="background:#34c759; color:white; padding:15px 25px; border-radius:10px; display:inline-block; text-decoration:none; font-weight:bold; margin-top:10px; box-shadow: 0 4px 15px rgba(52,199,89,0.4)">📥 DOWNLOAD APK</a><br><small style="color:#888; display:block; margin-top:10px">Format .zip (Ekstrak untuk ambil APK)</small>`;
-                    } else {
-                        logText.innerHTML = "Build sukses, tapi file gagal diarsip!";
-                    }
+                        if(artifact) {
+                            clearInterval(check);
+                            const dlUrl = `https://github.com/${u}/${r}/suites/${run.check_suite_id}/artifacts/${artifact.id}`;
+                            dot.innerHTML = '<i class="fa-solid fa-circle-check fa-2x" style="color:#34c759"></i>';
+                            logText.innerHTML = `<br><a href="${dlUrl}" target="_blank" style="background:#34c759; color:white; padding:15px 25px; border-radius:10px; display:inline-block; text-decoration:none; font-weight:bold; margin-top:10px; box-shadow: 0 4px 15px rgba(52,199,89,0.4)">📥 DOWNLOAD APK</a>`;
+                        } else if(retryCount < 5) {
+                            logText.innerHTML = "Build sukses! Lagi packing APK (sabar, Tuan)...";
+                            setTimeout(() => fetchArtifact(retryCount + 1), 5000);
+                        } else {
+                            clearInterval(check);
+                            logText.innerHTML = "File kelamaan diarsip. Cek manual di GitHub Tuan!";
+                        }
+                    };
+                    fetchArtifact();
                 } else {
+                    clearInterval(check);
                     dot.innerHTML = '<i class="fa-solid fa-circle-xmark fa-2x" style="color:#ff3b30"></i>';
                     logText.innerHTML = "Build Gagal! Cek Log di GitHub.";
                 }
@@ -142,4 +151,4 @@ jobs:
         with:
           name: application-debug
           path: build_box/platforms/android/app/build/outputs/apk/debug/app-debug.apk`;
-                            }
+                                }
